@@ -1,0 +1,122 @@
+-- patient & service utilization
+
+-- jumlah pasien aktif per bulan?
+SELECT
+    DATE_TRUNC('month', appointment_date::date)::date AS month,
+    COUNT(DISTINCT patient_id) AS active_patients
+FROM appointments
+WHERE status = 'Completed'
+GROUP BY month
+ORDER BY month;
+
+-- pola kunjungan (Completed vs Cancelled)?
+SELECT
+    status,
+    COUNT(*) AS total_appointments
+FROM appointments
+GROUP BY status
+ORDER BY total_appointments DESC;
+
+SELECT
+    status,
+    COUNT(*) AS total_appointments,
+    ROUND(
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (),
+        2
+    ) AS percentage
+FROM appointments
+GROUP BY status;
+
+--* past appointments only
+SELECT
+    status,
+    COUNT(*) AS total_appointments,
+    ROUND(
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (),
+        2
+    ) AS percentage
+FROM appointments
+WHERE appointment_date::date < CURRENT_DATE
+GROUP BY status;
+--* completed rate
+SELECT
+    ROUND(
+        COUNT(*) FILTER (WHERE status = 'Completed') * 100.0
+        / COUNT(*),
+        2
+    ) AS completion_rate
+FROM appointments
+WHERE appointment_date::date < CURRENT_DATE;
+--* no show rate
+SELECT
+    ROUND(
+        COUNT(*) FILTER (WHERE status = 'No-show') * 100.0
+        / COUNT(*),
+        2
+    ) AS no_show_rate
+FROM appointments
+WHERE appointment_date::date < CURRENT_DATE;
+--* status per bulan
+SELECT
+    DATE_TRUNC('month', appointment_date::date)::date AS month,
+    status,
+    COUNT(*) AS total_appointments
+FROM appointments
+GROUP BY month, status
+ORDER BY month, status;
+
+-- pasien baru vs lama?
+--baru: pasien yang pertama kali melakukan appointment Completed pada bulan tersebut
+--lama (returning): pasien yang sudah pernah Completed sebelumnya, lalu datang lagi
+
+SELECT
+    DATE_TRUNC('month', a.appointment_date::date)::date AS month,
+    COUNT(distinct 
+    CASE
+        WHEN a.appointment_date::date =
+             (SELECT MIN(a2.appointment_date::date)
+              FROM appointments a2
+              WHERE a2.patient_id = a.patient_id
+              AND a2.status = 'Completed'
+             )
+        THEN a.patient_id
+    END) AS new_patients,
+    COUNT(distinct
+    CASE
+        WHEN a.appointment_date::date >
+             (SELECT MIN(a2.appointment_date::date)
+              FROM appointments a2
+              WHERE a2.patient_id = a.patient_id
+              AND a2.status = 'Completed'
+             )
+        THEN a.patient_id
+    END) AS returning_patients
+FROM appointments a
+WHERE a.status = 'Completed'
+GROUP BY month
+ORDER BY month;
+--* pakai CTE (WITH); alternatif lebih singkat
+WITH first_visit AS (
+    SELECT
+        patient_id,
+        MIN(appointment_date::date) AS first_appointment_date
+    FROM appointments
+    WHERE status = 'Completed'
+    GROUP BY patient_id
+)
+SELECT
+    DATE_TRUNC('month', a.appointment_date::date)::date AS month,
+    COUNT(DISTINCT CASE
+        WHEN a.appointment_date::date = f.first_appointment_date
+        THEN a.patient_id
+    END) AS new_patients,
+    COUNT(DISTINCT CASE
+        WHEN a.appointment_date::date > f.first_appointment_date
+        THEN a.patient_id
+    END) AS returning_patients
+FROM appointments a
+JOIN first_visit f
+    ON a.patient_id = f.patient_id
+WHERE a.status = 'Completed'
+GROUP BY month
+ORDER BY month; 
