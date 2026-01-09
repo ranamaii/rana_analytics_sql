@@ -39,3 +39,4 @@ FROM (
     GROUP BY treatment_type
 ) t
 ORDER BY total_cost DESC;
+
