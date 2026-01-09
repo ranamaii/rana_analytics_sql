@@ -1,0 +1,50 @@
+-- billing & payment behavior
+
+-- % pembayaran berhasil?
+SELECT
+    payment_status,
+    COUNT(*) AS total_bills,
+    ROUND(
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (),
+        2
+    ) AS percentage
+FROM billing
+GROUP BY payment_status
+ORDER BY total_bills DESC;
+
+-- metode pembayaran paling sering gagal?
+SELECT
+    payment_method,
+    COUNT(*) AS failed_payments
+FROM billing
+WHERE payment_status = 'Failed'
+GROUP BY payment_method
+ORDER BY failed_payments DESC;
+
+-- billing pending terbesar dari insurance atau dari mana?
+SELECT
+    payment_method,
+    SUM(amount)::numeric AS pending_amount
+FROM billing
+WHERE payment_status = 'Pending'
+GROUP BY payment_method
+ORDER BY pending_amount DESC;
+
+--*payment success rate
+SELECT
+    payment_method,
+    COUNT(*) AS total_bills,
+    SUM(case
+	    WHEN payment_status = 'Paid' THEN 1
+	    ELSE 0 END)
+	    AS paid_bills,
+    ROUND(
+        SUM(case
+	        WHEN payment_status = 'Paid' THEN 1
+	        ELSE 0
+	        END)
+	        * 100.0 / COUNT(*),
+        2) AS success_rate
+FROM billing
+GROUP BY payment_method
+ORDER BY success_rate DESC;
