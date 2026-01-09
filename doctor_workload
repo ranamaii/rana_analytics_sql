@@ -56,3 +56,4 @@ JOIN appointments a
 WHERE a.status = 'Completed'
 GROUP BY month, doctor_name
 ORDER BY month, total_completed_appointments DESC;
+
