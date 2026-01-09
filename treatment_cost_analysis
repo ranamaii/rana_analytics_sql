@@ -1,0 +1,41 @@
+-- treatment & cost analysis
+
+-- Treatment paling mahal?
+SELECT
+    treatment_type,
+    MAX(cost) AS highest_cost
+FROM treatments
+GROUP BY treatment_type
+ORDER BY highest_cost DESC;
+
+-- tata-rata cost per jenis treatment?
+SELECT
+    treatment_type,
+    ROUND(AVG(cost)::numeric, 2) AS avg_cost
+FROM treatments
+GROUP BY treatment_type
+ORDER BY avg_cost DESC;
+
+-- tren biaya dari waktu ke waktu?
+SELECT
+    DATE_TRUNC('month', treatment_date::date)::date AS month,
+    SUM(cost) AS total_treatment_cost
+FROM treatments
+GROUP BY month
+ORDER BY month;
+
+--* cost contributor
+SELECT
+    treatment_type,
+    total_cost,
+    ROUND(
+        total_cost * 100.0 / SUM(total_cost) OVER (),
+        2) AS cost_percentage
+FROM (
+    SELECT
+        treatment_type,
+        SUM(cost)::numeric AS total_cost
+    FROM treatments
+    GROUP BY treatment_type
+) t
+ORDER BY total_cost DESC;
