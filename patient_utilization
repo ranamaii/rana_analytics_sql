@@ -120,3 +120,4 @@ JOIN first_visit f
 WHERE a.status = 'Completed'
 GROUP BY month
 ORDER BY month; 
+
