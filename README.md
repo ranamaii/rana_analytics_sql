@@ -14,7 +14,7 @@ This project analyzes a synthetic hospital management dataset using SQL to explo
 - Assess insurance usage and pending payment risk
 
 ## Tools
-- PostgreSQL, DBeaver
+- PostgreSQL (w/ DBeaver)
 - SQL (Joins, Aggregations, Window Functions)
 - Tableau (for visualization)
 
@@ -26,7 +26,7 @@ The dataset consists of multiple tables simulating a hospital management system 
 - treatments
 - billing
 
-All data is synthetically generated for educational purposes.
+All data is synthetically generated for educational/demo/practice purposes.
 
 ## Key Insights
 - Patient visits fluctuate monthly with a notable proportion of non-completed appointments.
