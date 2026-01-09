@@ -1,0 +1,49 @@
+-- insurance insight
+
+-- insurance provider mana paling banyak digunakan?
+SELECT
+    insurance_provider,
+    COUNT(*) AS total_patients
+FROM patients
+WHERE insurance_provider IS NOT NULL
+GROUP BY insurance_provider
+ORDER BY total_patients DESC;
+
+-- apakah insurance lebih sering pending?
+SELECT
+    payment_method,
+    COUNT(*) AS total_bills,
+    SUM(case
+	    WHEN payment_status = 'Pending' THEN 1
+	    ELSE 0
+	    END) AS pending_bills,
+    ROUND(
+        SUM(case
+	        WHEN payment_status = 'Pending' THEN 1
+	        ELSE 0
+	        END)
+	        * 100.0 / COUNT(*),
+        2) AS pending_rate
+FROM billing
+GROUP BY payment_method
+ORDER BY pending_rate DESC;
+
+--*insurance vs non
+SELECT
+    payment_method,
+    payment_status,
+    COUNT(*) AS total_bills
+FROM billing
+GROUP BY payment_method, payment_status
+ORDER BY payment_method, total_bills DESC;
+--* avg of billing amount tiap insurance
+SELECT
+    p.insurance_provider,
+    ROUND(AVG(b.amount)::numeric, 2) AS avg_billing_amount
+FROM billing b
+JOIN patients p
+	ON b.patient_id = p.patient_id
+WHERE b.payment_method = 'Insurance'
+GROUP BY p.insurance_provider
+ORDER BY avg_billing_amount DESC;
+
