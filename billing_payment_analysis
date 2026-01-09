@@ -48,3 +48,4 @@ SELECT
 FROM billing
 GROUP BY payment_method
 ORDER BY success_rate DESC;
+
