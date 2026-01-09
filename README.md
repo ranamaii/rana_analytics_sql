@@ -36,3 +36,23 @@ All data is synthetically generated for educational/demo/practice purposes.
 
 ## Next Steps
 - Build interactive dashboards using Tableau
+
+## SQL Analysis Structure
+
+The analysis is organized into the following SQL files:
+
+- `patient_utilization.sql`  
+  Analysis of active patients, appointment trends, and visit outcomes.
+
+- `doctor_workload.sql`  
+  Evaluation of doctor workload, appointment volume, and specialization demand.
+
+- `treatment_cost_analysis.sql`  
+  Analysis of treatment costs, cost drivers, and temporal cost trends.
+
+- `billing_payment_analysis.sql`  
+  Examination of billing status, payment methods, and payment success rates.
+
+- `insurance_insight.sql`  
+  Analysis of insurance usage patterns and pending payment risks.
+
