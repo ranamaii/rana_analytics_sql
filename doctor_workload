@@ -1,0 +1,58 @@
+-- doctor performance & workload
+
+-- dokter mana dengan beban kerja tertinggi?
+SELECT
+    d.doctor_id,
+    d.first_name || ' ' || d.last_name AS doctor_name,
+    COUNT(a.appointment_id) AS total_completed_appointments
+FROM doctors d
+JOIN appointments a
+    ON d.doctor_id = a.doctor_id
+WHERE a.status = 'Completed'
+GROUP BY d.doctor_id, doctor_name
+ORDER BY total_completed_appointments DESC;
+
+-- rata-rata appointment per dokter?
+SELECT
+    ROUND(
+        COUNT(*)::numeric / COUNT(DISTINCT doctor_id),
+        2
+    ) AS avg_completed_appointments_per_doctor
+FROM appointments
+WHERE status = 'Completed';
+
+-- spesialisasi mana paling sibuk?
+SELECT
+    d.specialization,
+    COUNT(a.appointment_id) AS total_completed_appointments
+FROM doctors d
+JOIN appointments a
+    ON d.doctor_id = a.doctor_id
+WHERE a.status = 'Completed'
+GROUP BY d.specialization
+ORDER BY total_completed_appointments DESC;
+
+--* ranking dokter
+SELECT
+    d.doctor_id,
+    d.first_name || ' ' || d.last_name AS doctor_name,
+    COUNT(a.appointment_id) AS total_completed_appointments,
+    RANK() OVER (
+        ORDER BY COUNT(a.appointment_id) DESC
+    ) AS workload_rank
+FROM doctors d
+JOIN appointments a
+    ON d.doctor_id = a.doctor_id
+WHERE a.status = 'Completed'
+GROUP BY d.doctor_id, doctor_name;
+--* beban kerja per bulan
+SELECT
+    DATE_TRUNC('month', a.appointment_date::date)::date AS month,
+    d.first_name || ' ' || d.last_name AS doctor_name,
+    COUNT(a.appointment_id) AS total_completed_appointments
+FROM doctors d
+JOIN appointments a
+	ON d.doctor_id = a.doctor_id
+WHERE a.status = 'Completed'
+GROUP BY month, doctor_name
+ORDER BY month, total_completed_appointments DESC;
